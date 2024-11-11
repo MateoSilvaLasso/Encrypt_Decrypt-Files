@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.encryptdecript.CipherController"
+      spacing="20"
+      alignment="CENTER"
+      style="-fx-background-color: #2B2B2B;"
+      prefHeight="400.0" prefWidth="600.0">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Cifrador/Descifrador de Archivos"
+           style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+
+    <HBox spacing="20" alignment="CENTER">
+        <TextField fx:id="filePathField"
+                   promptText="Seleccione un archivo..."
+                   prefWidth="350"
+                   style="-fx-background-color: #3C3F41; -fx-text-fill: white;"/>
+        <Button text="Explorar"
+                onAction="#browseFile"
+                style="-fx-background-color: #4B6EAF;"/>
+    </HBox>
+
+    <PasswordField fx:id="passwordField"
+                   promptText="Ingrese la contraseña..."
+                   prefWidth="350"
+                   style="-fx-background-color: #3C3F41; -fx-text-fill: white;"/>
+
+    <HBox spacing="30" alignment="CENTER">
+        <Button text="Cifrar Archivo"
+                onAction="#encryptFile"
+                prefWidth="150"
+                style="-fx-background-color: #629755;"/>
+        <Button text="Descifrar Archivo"
+                onAction="#decryptFile"
+                prefWidth="150"
+                style="-fx-background-color: #CC7832;"/>
+    </HBox>
+
+    <ProgressBar fx:id="progressBar"
+                 progress="0.0"
+                 prefWidth="400"/>
+
+    <Label fx:id="statusLabel"
+           text=""
+           style="-fx-text-fill: white;"/>
+</VBox>
