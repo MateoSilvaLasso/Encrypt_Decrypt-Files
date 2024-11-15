@@ -1,13 +1,13 @@
 package com.example.encryptdecript;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.stage.FileChooser;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
+
+import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
@@ -16,7 +16,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
-import java.util.Base64;
 
 public class CipherController {
     @FXML
@@ -57,17 +56,13 @@ public class CipherController {
                 File inputFile = new File(filePathField.getText());
                 File outputFile = new File(filePathField.getText() + ".encrypted");
 
-
                 byte[] salt = generateRandomBytes(SALT_LENGTH);
                 byte[] iv = generateRandomBytes(IV_LENGTH);
 
+                SecretKey key = generateKey(passwordField.getText(), salt);
 
-                SecretKey key = generateKey(passwordField.getText(), salt); //aqui es para meterle salt a la contraseña que meta el cliente y sea mas seguro
-
-                // Calcular hash del archivo original
                 byte[] hash = calculateFileHash(inputFile);
 
-                // Cifrar el archivo
                 encryptFileWithKey(inputFile, outputFile, key, iv, salt, hash);
 
                 updateUI("Archivo cifrado exitosamente!", 1.0);
@@ -91,28 +86,22 @@ public class CipherController {
                 File inputFile = new File(filePathField.getText());
                 File outputFile = new File(filePathField.getText() + ".decrypted");
 
-
-                try (DataInputStream dis = new DataInputStream(new FileInputStream(inputFile))) {
+                try (FileInputStream fis = new FileInputStream(inputFile)) {
                     byte[] salt = new byte[SALT_LENGTH];
                     byte[] iv = new byte[IV_LENGTH];
-                    byte[] storedHash = new byte[32]; // SHA-256 = 32 bytes
 
-                    dis.read(salt);
-                    dis.read(iv);
-                    dis.read(storedHash);
-
+                    if (fis.read(salt) != SALT_LENGTH) {
+                        throw new IOException("No se pudo leer el salt del archivo cifrado.");
+                    }
+                    if (fis.read(iv) != IV_LENGTH) {
+                        throw new IOException("No se pudo leer el IV del archivo cifrado.");
+                    }
 
                     SecretKey key = generateKey(passwordField.getText(), salt);
 
-                    // Descifrar el archivo
-                    decryptFileWithKey(inputFile, outputFile, key, iv, SALT_LENGTH + IV_LENGTH + 32);
+                    long headerLength = SALT_LENGTH + IV_LENGTH;
 
-                    // aqui comprobamos si el has del archivo es el mismo o no, si no lo es, la contraseña es incorrecta
-                    byte[] newHash = calculateFileHash(outputFile);
-                    if (!Arrays.equals(storedHash, newHash)) {
-                        outputFile.delete();
-                        throw new Exception("El hash no coincide. La contraseña es incorrecta.");
-                    }
+                    decryptFileWithKey(inputFile, outputFile, key, iv, headerLength);
 
                     updateUI("Archivo descifrado exitosamente!", 1.0);
                     Thread.sleep(500);
@@ -181,12 +170,10 @@ public class CipherController {
 
         try (FileInputStream fis = new FileInputStream(inputFile);
              FileOutputStream fos = new FileOutputStream(outputFile);
-             DataOutputStream dos = new DataOutputStream(fos)) {
+             CipherOutputStream cos = new CipherOutputStream(fos, cipher)) {
 
-
-            dos.write(salt);
-            dos.write(iv);
-            dos.write(hash);
+            fos.write(salt);
+            fos.write(iv);
 
             byte[] buffer = new byte[8192];
             int bytesRead;
@@ -194,49 +181,56 @@ public class CipherController {
             long processedBytes = 0;
 
             while ((bytesRead = fis.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    dos.write(output);
-                }
+                cos.write(buffer, 0, bytesRead);
                 processedBytes += bytesRead;
                 updateUI("Cifrando archivo...", (double) processedBytes / totalBytes);
             }
 
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                dos.write(outputBytes);
-            }
+            cos.flush();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile, true)) {
+            fos.write(hash);
         }
     }
 
-    private void decryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, int headerLength)
+    private void decryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, long headerLength)
             throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
 
-        try (FileInputStream fis = new FileInputStream(inputFile);
-             FileOutputStream fos = new FileOutputStream(outputFile)) {
+        final int HASH_SIZE = 32;
 
-            // Saltar el header (salt + IV + hash)
-            fis.skip(headerLength);
+        try (RandomAccessFile raf = new RandomAccessFile(inputFile, "r")) {
+            long fileLength = raf.length();
 
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            long totalBytes = inputFile.length() - headerLength;
-            long processedBytes = 0;
+            raf.seek(fileLength - HASH_SIZE);
+            byte[] storedHash = new byte[HASH_SIZE];
+            raf.readFully(storedHash);
 
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    fos.write(output);
+            try (FileInputStream fis = new FileInputStream(inputFile);
+                 CipherInputStream cis = new CipherInputStream(fis, cipher);
+                 FileOutputStream fos = new FileOutputStream(outputFile)) {
+
+                fis.skip(headerLength);
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                long encryptedDataSize = fileLength - headerLength - HASH_SIZE;
+                long processedBytes = 0;
+
+                while ((bytesRead = cis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                    processedBytes += bytesRead;
+                    updateUI("Descifrando archivo...", (double) processedBytes / encryptedDataSize);
                 }
-                processedBytes += bytesRead;
-                updateUI("Descifrando archivo...", (double) processedBytes / totalBytes);
             }
 
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                fos.write(outputBytes);
+            byte[] computedHash = calculateFileHash(outputFile);
+
+            if (!Arrays.equals(storedHash, computedHash)) {
+                outputFile.delete();
+                throw new Exception("El hash no coincide. La contraseña es incorrecta o el archivo está corrupto.");
             }
         }
     }
