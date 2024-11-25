@@ -19,10 +19,10 @@ import java.util.Arrays;
 
 public class CipherController {
     @FXML
-    private TextField filePathField;
+    public TextField filePathField;
 
     @FXML
-    private PasswordField passwordField;
+    public PasswordField passwordField;
 
     @FXML
     private ProgressBar progressBar;
@@ -48,7 +48,7 @@ public class CipherController {
     }
 
     @FXML
-    private void encryptFile() {
+    public void encryptFile() {
         if (!validateInputs()) return;
 
         Thread thread = new Thread(() -> {
@@ -78,7 +78,7 @@ public class CipherController {
     }
 
     @FXML
-    private void decryptFile() {
+    public void decryptFile() {
         if (!validateInputs()) return;
 
         Thread thread = new Thread(() -> {
@@ -115,7 +115,7 @@ public class CipherController {
         thread.start();
     }
 
-    private boolean validateInputs() {
+    public boolean validateInputs() {
         if (filePathField.getText().isEmpty()) {
             updateUI("Por favor seleccione un archivo", 0.0);
             return false;
@@ -139,19 +139,19 @@ public class CipherController {
         });
     }
 
-    private byte[] generateRandomBytes(int length) {
+    public byte[] generateRandomBytes(int length) {
         byte[] bytes = new byte[length];
         new SecureRandom().nextBytes(bytes);
         return bytes;
     }
 
-    private SecretKey generateKey(String password, byte[] salt) throws Exception {
+    public SecretKey generateKey(String password, byte[] salt) throws Exception {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
         return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
 
-    private byte[] calculateFileHash(File file) throws Exception {
+    public byte[] calculateFileHash(File file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (InputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[8192];
@@ -163,7 +163,7 @@ public class CipherController {
         return digest.digest();
     }
 
-    private void encryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, byte[] salt, byte[] hash)
+    public void encryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, byte[] salt, byte[] hash)
             throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
@@ -194,7 +194,7 @@ public class CipherController {
         }
     }
 
-    private void decryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, long headerLength)
+    public void decryptFileWithKey(File inputFile, File outputFile, SecretKey key, byte[] iv, long headerLength)
             throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
