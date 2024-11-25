@@ -23,10 +23,10 @@ import java.util.Arrays;
  */
 public class CipherController {
     @FXML
-    private TextField filePathField;
+    public TextField filePathField;
 
     @FXML
-    private PasswordField passwordField;
+    public PasswordField passwordField;
 
     @FXML
     private ProgressBar progressBar;
@@ -89,7 +89,8 @@ public class CipherController {
      * After successful encryption, the download button is enabled.
      */
     @FXML
-    private void encryptFile() {
+
+    public void encryptFile() {
         enableDownloadButton(false);
         if (!validateInputs()) return;
 
@@ -132,7 +133,7 @@ public class CipherController {
      * After successful decryption, the download button is enabled.
      */
     @FXML
-    private void decryptFile() {
+    public void decryptFile() {
         enableDownloadButton(false);
         if (!validateInputs()) return;
 
@@ -223,7 +224,7 @@ public class CipherController {
      *
      * @return true if the inputs are valid; false otherwise.
      */
-    private boolean validateInputs() {
+    public boolean validateInputs() {
         if (filePathField.getText().isEmpty()) {
             updateUI("Please select a file.", 0.0);
             return false;
@@ -417,7 +418,7 @@ public class CipherController {
      * @param originalFile The original file to encrypt.
      * @return A new File object with the modified name.
      */
-    private File getEncryptedFileName(File originalFile) {
+    public File getEncryptedFileName(File originalFile) {
         String originalName = originalFile.getName();
         int dotIndex = originalName.lastIndexOf('.');
 
@@ -437,7 +438,7 @@ public class CipherController {
      * @return A new File object with the modified name.
      * @throws IllegalArgumentException If the file name does not contain the "_encrypted" suffix.
      */
-    private File getDecryptedFileName(File encryptedFile) throws IllegalArgumentException {
+    public File getDecryptedFileName(File encryptedFile) throws IllegalArgumentException {
         String encryptedName = encryptedFile.getName();
         int suffixIndex = encryptedName.lastIndexOf("_encrypted");
 
