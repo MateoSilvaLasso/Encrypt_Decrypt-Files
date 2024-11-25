@@ -9,47 +9,86 @@
       fx:controller="com.example.encryptdecript.CipherController"
       spacing="20"
       alignment="CENTER"
-      style="-fx-background-color: #2B2B2B;"
-      prefHeight="400.0" prefWidth="600.0">
+      style="-fx-background-color: #FFFFFF;"
+        prefHeight="500.0" prefWidth="500.0">
 
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+<padding>
+<Insets top="20" right="30" bottom="20" left="30"/>
+</padding>
 
-    <Label text="Cifrador/Descifrador de Archivos"
-           style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+<Label text="Cifrador/Descifrador de Archivos"
+       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #555555;"/>
 
-    <HBox spacing="20" alignment="CENTER">
-        <TextField fx:id="filePathField"
-                   promptText="Seleccione un archivo..."
-                   prefWidth="350"
-                   style="-fx-background-color: #3C3F41; -fx-text-fill: white;"/>
-        <Button text="Explorar"
-                onAction="#browseFile"
-                style="-fx-background-color: #4B6EAF;"/>
-    </HBox>
+<HBox spacing="15" alignment="CENTER">
+<TextField fx:id="filePathField"
+           promptText="Seleccionar archivo..."
+           prefWidth="300"
+           style="-fx-background-color: #ffffff;
+                          -fx-text-fill: #5e5e5e;
+                          -fx-border-color: #d6d6d6;
+                          -fx-border-radius: 5px;
+                          -fx-background-radius: 5px;
+                          -fx-padding: 10px;"/>
+<Button text="Explorar"
+        onAction="#browseFile"
+        style="-fx-background-color: #000000;
+                       -fx-text-fill: #ffffff;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 5px;
+                       -fx-padding: 10px;"
+        prefWidth="100"/>
+</HBox>
 
-    <PasswordField fx:id="passwordField"
-                   promptText="Ingrese la contraseña..."
-                   prefWidth="350"
-                   style="-fx-background-color: #3C3F41; -fx-text-fill: white;"/>
+<PasswordField fx:id="passwordField"
+               promptText="Ingrese la contraseña"
+               prefWidth="300"
+               style="-fx-background-color: #ffffff;
+                          -fx-text-fill: #575757;
+                          -fx-border-color: #d6d6d6;
+                          -fx-border-radius: 5px;
+                          -fx-background-radius: 5px;
+                          -fx-padding: 10px;"/>
 
-    <HBox spacing="30" alignment="CENTER">
-        <Button text="Cifrar Archivo"
-                onAction="#encryptFile"
-                prefWidth="150"
-                style="-fx-background-color: #629755;"/>
-        <Button text="Descifrar Archivo"
-                onAction="#decryptFile"
-                prefWidth="150"
-                style="-fx-background-color: #CC7832;"/>
-    </HBox>
+<HBox spacing="20" alignment="CENTER">
+<Button text="Cifrar Archivo"
+        onAction="#encryptFile"
+        prefWidth="150"
+        style="-fx-background-color: #9accf1;
+                       -fx-text-fill: #434343;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 10px;
+                       -fx-padding: 10px;"/>
+<Button text="Descifrar Archivo"
+        onAction="#decryptFile"
+        prefWidth="150"
+        style="-fx-background-color: #ceef57;
+                       -fx-text-fill: #606060;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 10px;
+                       -fx-padding: 10px;"/>
+<Button fx:id="downloadButton"
+        text="Descargar"
+        onAction="#downloadFile"
+        prefWidth="150"
+        style="-fx-background-color: #c3c3c3;
+                       -fx-text-fill: #535353;
+                       -fx-font-weight: bold;
+                       -fx-background-radius: 10px;
+                       -fx-padding: 10px;"
+        disable="true"/>
+</HBox>
 
-    <ProgressBar fx:id="progressBar"
-                 progress="0.0"
-                 prefWidth="400"/>
 
-    <Label fx:id="statusLabel"
-           text=""
-           style="-fx-text-fill: white;"/>
-</VBox>
+<ProgressBar fx:id="progressBar"
+             progress="0.0"
+             prefWidth="450"
+             style="-fx-accent: #d2f8fb; /* Beige */
+                        -fx-background-color: #ffffff; /* Beige claro */"/>
+
+
+<Label fx:id="statusLabel"
+       text=""
+       style="-fx-text-fill: #616161; /* Marrón medio */
+                  -fx-font-size: 14px;
+                  -fx-padding: 10px;"/>
+        </VBox>

@@ -89,6 +89,7 @@ public class CipherController {
      * After successful encryption, the download button is enabled.
      */
     @FXML
+
     public void encryptFile() {
         enableDownloadButton(false);
         if (!validateInputs()) return;
