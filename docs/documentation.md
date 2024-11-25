@@ -54,7 +54,8 @@ src/
 │   └── resources/
 │       └── testFile.txt
 docs/
-└── documentation.md
+└── documentation.md 
+```
 
 ## **Features**
 
