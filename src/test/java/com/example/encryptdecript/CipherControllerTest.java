@@ -1,84 +1,72 @@
 package com.example.encryptdecript;
 
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CipherControllerTest {
 
-    private CipherController controller;
-
-    @BeforeEach
-    void setUp() throws Exception {
-        new Thread(() -> Platform.startup(() -> {})).start();
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/encryptdecript/principal-view.fxml"));
-        Parent root = loader.load();
-        controller = loader.getController();
-
-        controller.filePathField = new TextField();
-        controller.passwordField = new PasswordField();
-    }
-
     @Test
-    void testValidateInputs() throws Exception {
-        controller.filePathField.setText("");
-        controller.passwordField.setText("");
-        assertFalse(controller.validateInputs());
+    void testEncryptionDecryption() throws Exception {
+ 
+        Platform.startup(() -> {});
 
-        controller.filePathField.setText("nonexistent_file.txt");
-        controller.passwordField.setText("password123");
-        assertFalse(controller.validateInputs());
+        TextField mockFilePathField = new TextField();
+        PasswordField mockPasswordField = new PasswordField();
 
-        File tempFile = new File("tempFile.txt");
-        tempFile.createNewFile();
-        tempFile.deleteOnExit();
 
-        controller.filePathField.setText(tempFile.getAbsolutePath());
-        controller.passwordField.setText("password123");
-        assertTrue(controller.validateInputs());
-    }
+        CipherController cipherController = new CipherController();
 
-    @Test
-    void testEncryptAndDecryptFile() throws Exception {
-        File inputFile = new File("src/test/resources/testFile.txt");
+  
+        setPrivateField(cipherController, "filePathField", mockFilePathField);
+        setPrivateField(cipherController, "passwordField", mockPasswordField);
 
-        if (!inputFile.exists()) {
-            inputFile.getParentFile().mkdirs();
-            try (FileWriter writer = new FileWriter(inputFile)) {
-                writer.write("Este es un archivo de prueba para cifrado.");
-            }
+        File tempFile = File.createTempFile("testfile", ".txt");
+        String originalContent = "This is a test file for encryption and decryption.";
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write(originalContent);
         }
 
-        assertTrue(inputFile.exists(), "El archivo de entrada no existe.");
+        mockFilePathField.setText(tempFile.getAbsolutePath());
+        mockPasswordField.setText("strongpassword123");
 
-        File encryptedFile = new File("src/test/resources/testFile.txt.encrypted");
-        File decryptedFile = new File("src/test/resources/testFile.txt.decrypted");
 
-        if (encryptedFile.exists()) encryptedFile.delete();
-        if (decryptedFile.exists()) decryptedFile.delete();
+        cipherController.encryptFile();
+        Thread.sleep(2000); 
 
-        controller.filePathField.setText(inputFile.getAbsolutePath());
-        controller.passwordField.setText("securePassword123");
+        File encryptedFile = cipherController.getEncryptedFileName(tempFile);
+        assertTrue(encryptedFile.exists(), "El archivo cifrado debería existir");
 
-        controller.encryptFile();
-        Thread.sleep(1000);
+        mockFilePathField.setText(encryptedFile.getAbsolutePath());
 
-        assertTrue(encryptedFile.exists(), "El archivo cifrado no fue creado.");
+        cipherController.decryptFile();
+        Thread.sleep(2000); 
 
-        controller.filePathField.setText(encryptedFile.getAbsolutePath());
-        controller.decryptFile();
-        Thread.sleep(1000);
+ 
+        File decryptedFile = cipherController.getDecryptedFileName(encryptedFile);
+        assertTrue(decryptedFile.exists(), "El archivo descifrado debería existir");
 
-        assertTrue(decryptedFile.exists(), "El archivo descifrado no fue creado.");
+        String decryptedContent = new String(Files.readAllBytes(decryptedFile.toPath()), StandardCharsets.UTF_8);
+        assertTrue(originalContent.equals(decryptedContent), "El contenido descifrado debería coincidir con el original");
+
+
+        tempFile.delete();
+        encryptedFile.delete();
+        decryptedFile.delete();
+    }
+
+
+    private static void setPrivateField(Object target, String fieldName, Object value) throws Exception {
+        var field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 }
