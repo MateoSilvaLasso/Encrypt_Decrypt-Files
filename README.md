@@ -116,14 +116,6 @@ This project demonstrates the application of strong encryption and integrity val
 
 ---
 
-## **Repository**
-The source code and detailed documentation are available on our [GitHub repository](#). The repository contains:
-- Source code for the application.
-- Unit tests for core functionalities.
-- A Markdown report with detailed explanations of the project.
-
----
-
 ## **How to Run the Program**
 1. Clone the repository from GitHub.
 2. Open the project in your preferred IDE.
